@@ -1,7 +1,11 @@
 import pandas as pd
 import openai
+from dotenv import load_dotenv
+import os
 
-client = openai.OpenAI(api_key="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")
+load_dotenv()
+
+client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def clasificar_fila(fila):
     prompt = f"""
