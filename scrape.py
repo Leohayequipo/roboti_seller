@@ -2,10 +2,35 @@ import pandas as pd
 import re, tldextract
 from langdetect import detect
 from playwright.sync_api import sync_playwright
-
 def extract_emails(html):
-    return list(set(re.findall(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", html)))
+    raw_emails = re.findall(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", html)
+    # Filtro: descarta imágenes o archivos adjuntos
+    return list(set(e for e in raw_emails if not e.lower().endswith(('.png', '.jpg', '.jpeg'))))
 
+def guess_country(url):
+    ext = tldextract.extract(url)
+    domain = ext.domain
+    tld = ext.suffix
+
+    if tld == 'ar':
+        return 'Argentina'
+    elif tld == 'uy':
+        return 'Uruguay'
+    elif tld == 'br':
+        return 'Brasil'
+    elif tld == 'cl':
+        return 'Chile'
+    elif tld == 'mx':
+        return 'México'
+    elif '.com' in tld:
+        if "woow" in domain:
+            return "Uruguay"
+        elif "fravega" in domain or "bgh" in domain or "cetrogar" in domain:
+            return "Argentina"
+        else:
+            return "Desconocido"
+    else:
+        return 'Desconocido'
 def guess_country(url):
     ext = tldextract.extract(url)
     tld = ext.suffix
