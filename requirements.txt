@@ -1,0 +1,8 @@
+flask
+flask-cors
+python-dotenv
+playwright
+pandas
+tldextract
+langdetect
+openai

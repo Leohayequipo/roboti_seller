@@ -81,7 +81,7 @@ categoria_corregida
 confiabilidad
 
 ✅ Checklist final
- Proyecto clonado
+ Proyecto clonadoonda 2000
 
  Dependencias instaladas
 
