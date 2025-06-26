@@ -34,3 +34,45 @@ Por cada URL de tienda, el script:
 ```bash
 python -m venv venv
 venv\Scripts\activate
+
+```
+
+---
+
+## 🏁 Cómo poner en marcha el proyecto
+
+### 1. Backend (Python)
+
+1. Abre una terminal y navega a la carpeta del backend:
+   ```sh
+   cd roboti_seller
+   ```
+2. Instala las dependencias:
+   ```sh
+   pip install -r requirements.txt
+   ```
+3. Ejecuta la app (ajusta si usas Flask, FastAPI, etc.):
+   ```sh
+   python app.py
+   ```
+
+### 2. Frontend (React)
+
+1. Abre otra terminal y navega a la carpeta del frontend:
+   ```sh
+   cd roboti_seller/frontend
+   ```
+2. Instala las dependencias:
+   ```sh
+   npm install
+   ```
+3. Inicia el servidor de desarrollo:
+   ```sh
+   npm run dev
+   ```
+
+### 3. Acceso
+- El backend suele correr en `http://localhost:5000` (o el puerto que indique tu app).
+- El frontend suele correr en `http://localhost:5173` (o el puerto que indique Vite).
+
+¡Listo! Así puedes poner en marcha el proyecto completo (backend + frontend).

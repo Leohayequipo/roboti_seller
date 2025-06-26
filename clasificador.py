@@ -4,6 +4,7 @@ import pathlib
 import pandas as pd
 import openai
 from dotenv import load_dotenv
+import json
 
 load_dotenv()
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -12,7 +13,7 @@ def clasificar_fila(fila):
     prompt = f"""
 Analizá el siguiente sitio web:
 - URL: {fila['url']}
-- Email de contacto: {fila['emails']}
+- Email de contacto: {fila['emails'] if pd.notnull(fila['emails']) else ''}
 - Categoría detectada: {fila['categoria']}
 
 Responde en JSON con:
@@ -25,7 +26,12 @@ Responde en JSON con:
         messages=[{"role": "user", "content": prompt}],
         temperature=0.3,
     )
-    datos = eval(resp.choices[0].message.content.strip())
+    content = resp.choices[0].message.content.strip()
+    try:
+        datos = json.loads(content)
+    except Exception as e:
+        print(f"❌ Error parseando JSON de OpenAI: {e}\nRespuesta: {content}")
+        datos = {"es_ecommerce": "", "categoria_corregida": "", "confiabilidad": ""}
     return pd.Series([
         datos.get("es_ecommerce", ""),
         datos.get("categoria_corregida", ""),
@@ -40,6 +46,8 @@ def classify_all():
 
     # 2) Leer
     df = pd.read_csv(csv_in)
+    # Reemplaza NaN por string vacío en todas las columnas relevantes
+    df = df.fillna("")
     # 3) Clasificar
     df[["es_ecommerce","categoria_corregida","confiabilidad"]] = df.apply(clasificar_fila, axis=1)
     # 4) Escribir
