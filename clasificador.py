@@ -9,6 +9,24 @@ import json
 load_dotenv()
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+def calcular_score(fila):
+    score = 50  # base
+    # Sube si tiene email
+    if fila.get('emails') and str(fila['emails']).strip():
+        score += 15
+    # Sube si la categoría corregida es "electro" o "tecnología"
+    cat = str(fila.get('categoria_corregida', '') or fila.get('categoria', '')).lower()
+    if 'electro' in cat or 'tecnolog' in cat:
+        score += 15
+    # Sube si confiabilidad es alta
+    if str(fila.get('confiabilidad', '')).lower() == 'alta':
+        score += 10
+    # Sube si es ecommerce
+    if str(fila.get('es_ecommerce', '')).lower() in ['sí', 'si', 'yes', 'true']:
+        score += 10
+    # Limita entre 1 y 100
+    return max(1, min(score, 100))
+
 def clasificar_fila(fila):
     prompt = f"""
 Analizá el siguiente sitio web:
@@ -32,10 +50,15 @@ Responde en JSON con:
     except Exception as e:
         print(f"❌ Error parseando JSON de OpenAI: {e}\nRespuesta: {content}")
         datos = {"es_ecommerce": "", "categoria_corregida": "", "confiabilidad": ""}
+    # Calcula el score con los datos obtenidos
+    fila_dict = fila.to_dict() if hasattr(fila, 'to_dict') else dict(fila)
+    fila_dict.update(datos)
+    score = calcular_score(fila_dict)
     return pd.Series([
         datos.get("es_ecommerce", ""),
         datos.get("categoria_corregida", ""),
-        datos.get("confiabilidad", "")
+        datos.get("confiabilidad", ""),
+        score
     ])
 
 def classify_all():
@@ -48,8 +71,8 @@ def classify_all():
     df = pd.read_csv(csv_in)
     # Reemplaza NaN por string vacío en todas las columnas relevantes
     df = df.fillna("")
-    # 3) Clasificar
-    df[["es_ecommerce","categoria_corregida","confiabilidad"]] = df.apply(clasificar_fila, axis=1)
+    # 3) Clasificar (agrega score)
+    df[["es_ecommerce","categoria_corregida","confiabilidad","score"]] = df.apply(clasificar_fila, axis=1)
     # 4) Escribir
     df.to_csv(csv_out, index=False)
     # 5) Devolver para JSON

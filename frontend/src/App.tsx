@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { FaGlobe, FaShoppingCart, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
 export default function App() {
   const [urls, setUrls] = useState<string>("");
@@ -76,55 +77,88 @@ export default function App() {
   
 
   return (
-    <div style={{ padding: "2rem", maxWidth: "600px", margin: "auto" }}>
-      <h1>Roboti Seller – Scraping Inteligente</h1>
-      <textarea
-        rows={10}
-        cols={60}
-        placeholder="Pegá las URLs acá, una por línea"
-        value={urls}
-        onChange={(e) => setUrls(e.target.value)}
-      />
-      <br />
-      <button onClick={handleScrape} disabled={scraping}>
-        {scraping ? "Ejecutando scraping..." : "Iniciar scraping"}
-      </button>
-      <button onClick={handleClasificar} disabled={scraping} style={{ marginLeft: "1rem" }}>
-        {scraping ? "Clasificando..." : "Ejecutar clasificación GPT"}
-      </button>
-      <p>{message}</p>
-
-      {resultados.length > 0 && (
-        <div style={{ marginTop: "2rem" }}>
-          <h2>Leads clasificados</h2>
-          <table border={1} cellPadding={8} style={{ width: "100%", marginTop: "1rem" }}>
-            <thead>
-              <tr>
-                <th>URL</th>
-                <th>Emails</th>
-                <th>País</th>
-                <th>Categoría</th>
-                <th>E-commerce</th>
-                <th>Cat. corregida</th>
-                <th>Confiabilidad</th>
-              </tr>
-            </thead>
-            <tbody>
-              {resultados.map((fila, i) => (
-                <tr key={i}>
-                  <td>{fila.url}</td>
-                  <td>{fila.emails}</td>
-                  <td>{fila.pais}</td>
-                  <td>{fila.categoria}</td>
-                  <td>{fila.es_ecommerce}</td>
-                  <td>{fila.categoria_corregida}</td>
-                  <td>{fila.confiabilidad}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+    <div className="app-bg">
+      <div className="main-container">
+        <header className="header">
+          <FaShoppingCart className="logo-icon" />
+          <div>
+            <h1>Roboti Seller</h1>
+            <p className="subtitle">Scraping & Scoring Inteligente de E-commerce</p>
+          </div>
+        </header>
+        <section className="input-section">
+          <textarea
+            rows={8}
+            cols={60}
+            placeholder="Pegá las URLs acá, una por línea"
+            value={urls}
+            onChange={(e) => setUrls(e.target.value)}
+            className="url-textarea"
+          />
+          <div className="button-row">
+            <button className="main-btn" onClick={handleScrape} disabled={scraping}>
+              {scraping ? "Ejecutando scraping..." : "Iniciar scraping"}
+            </button>
+            <button className="main-btn" onClick={handleClasificar} disabled={scraping}>
+              {scraping ? "Clasificando..." : "Ejecutar clasificación GPT"}
+            </button>
+          </div>
+          <p className="message">{message}</p>
+        </section>
+        {resultados.length > 0 && (
+          <section className="results-section">
+            <h2>Leads clasificados</h2>
+            <div className="table-responsive">
+              <table className="results-table">
+                <thead>
+                  <tr>
+                    <th>URL</th>
+                    <th>Emails</th>
+                    <th>País</th>
+                    <th>Categoría</th>
+                    <th>E-commerce</th>
+                    <th>Cat. corregida</th>
+                    <th>Confiabilidad</th>
+                    <th>Score</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {resultados.map((fila, i) => (
+                    <tr key={i}>
+                      <td className="url-cell">{fila.url}</td>
+                      <td>{fila.emails}</td>
+                      <td><span className="badge badge-country"><FaGlobe /> {fila.pais}</span></td>
+                      <td><span className={`badge badge-cat badge-cat-${(fila.categoria_corregida || fila.categoria || '').toLowerCase()}`}>{fila.categoria_corregida || fila.categoria}</span></td>
+                      <td>
+                        {String(fila.es_ecommerce).toLowerCase().startsWith("s") || String(fila.es_ecommerce).toLowerCase().startsWith("y") ? (
+                          <span className="badge badge-yes"><FaCheckCircle /> Sí</span>
+                        ) : (
+                          <span className="badge badge-no"><FaTimesCircle /> No</span>
+                        )}
+                      </td>
+                      <td>{fila.categoria_corregida}</td>
+                      <td>
+                        <span className={`badge badge-conf badge-conf-${(fila.confiabilidad || '').toLowerCase()}`}>{fila.confiabilidad}</span>
+                      </td>
+                      <td>
+                        <span className={`badge badge-score badge-score-${getScoreColor(fila.score)}`}>{fila.score}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+        <footer className="footer">Hecho con ❤️ por tu equipo</footer>
+      </div>
     </div>
   );
+}
+
+// Helper para color de score
+function getScoreColor(score) {
+  if (score >= 80) return "high";
+  if (score >= 60) return "mid";
+  return "low";
 }
