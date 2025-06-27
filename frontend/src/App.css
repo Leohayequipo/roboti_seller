@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
 
-body, html, #root, .app-bg {
+body, html, #root {
   min-height: 100vh;
   background: linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%);
   font-family: 'Inter', Arial, sans-serif;
