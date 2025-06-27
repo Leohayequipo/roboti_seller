@@ -6,6 +6,7 @@ import pathlib
 import subprocess
 # Importamos la función que hace toda la lógica de clasificación
 from clasificador import classify_all
+import openai
 
 app = Flask(__name__)
 CORS(app)
@@ -81,6 +82,33 @@ def download():
             as_attachment=True,
             download_name="leads_clasificados.csv"
         )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/generar_mail", methods=["POST"])
+def generar_mail():
+    data = request.get_json()
+    empresa = data.get("empresa", "la empresa")
+    rubro = data.get("rubro", "su rubro")
+    uuid = data.get("uuid", "1234")
+    email = data.get("email", "")
+    prompt = f"""
+Redactá un correo para {empresa}, dedicada a {rubro}, donde les contamos que ofrecemos una herramienta de analítica avanzada con IA. Invitarlos a charlar con nuestro asesor virtual para entender sus necesidades.
+
+Incluí en el cuerpo algo como:
+<p>Podés iniciar una charla con nuestro asesor inteligente acá:</p>
+<a href=\"https://roboti.miempresa.com/chat/{uuid}\" target=\"_blank\">Chatear con Roboti</a>
+"""
+    try:
+        resp = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY")).chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3,
+        )
+        content = resp.choices[0].message.content.strip()
+        # Asunto sugerido
+        subject = f"¡Conocé nuestra herramienta de IA para {empresa}!"
+        return jsonify({"subject": subject, "body": content})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

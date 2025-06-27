@@ -6,6 +6,7 @@ export default function App() {
   const [scraping, setScraping] = useState<boolean>(false);
   const [message, setMessage] = useState<string>("");
   const [resultados, setResultados] = useState<any[]>([]);
+  const [mailLoading, setMailLoading] = useState<string | null>(null);
 
   // 1. Función para recargar la tabla de resultados
   const fetchResultados = async () => {
@@ -143,6 +144,8 @@ export default function App() {
                       </td>
                       <td>
                         <span style={{ display: "inline-block", borderRadius: 16, padding: "4px 12px", fontWeight: 700, background: fila.score >= 80 ? 'linear-gradient(90deg, #34d399 60%, #a5b4fc 100%)' : fila.score >= 60 ? 'linear-gradient(90deg, #fbbf24 60%, #a5b4fc 100%)' : 'linear-gradient(90deg, #f87171 60%, #a5b4fc 100%)', color: fila.score >= 80 ? '#fff' : fila.score >= 60 ? '#232946' : '#fff', marginRight: 8 }}>{fila.score}</span>
+                      </td>
+                      <td>
                         <button
                           style={{
                             background: fila.emails ? "#2563eb" : "#cbd5e1",
@@ -160,15 +163,41 @@ export default function App() {
                             opacity: fila.emails ? 1 : 0.5,
                             transition: "background 0.2s"
                           }}
-                          disabled={!fila.emails}
+                          disabled={!fila.emails || mailLoading === fila.emails}
                           title={fila.emails ? `Enviar mail a ${fila.emails}` : "Sin email"}
-                          onClick={() => {
+                          onClick={async () => {
                             if (fila.emails) {
-                              window.location.href = `mailto:${fila.emails}`;
+                              setMailLoading(fila.emails);
+                              try {
+                                const res = await fetch("http://localhost:5050/generar_mail", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({
+                                    empresa: fila.url || "la empresa",
+                                    rubro: fila.categoria_corregida || fila.categoria || "su rubro",
+                                    uuid: fila.uuid || fila.url?.split("/").pop() || "1234",
+                                    email: fila.emails
+                                  })
+                                });
+                                const data = await res.json();
+                                if (data.subject && data.body) {
+                                  window.location.href = `mailto:${fila.emails}?subject=${encodeURIComponent(data.subject)}&body=${encodeURIComponent(data.body)}`;
+                                }
+                              } catch (e) {
+                                alert("Error generando el mail: " + e);
+                              }
+                              setMailLoading(null);
                             }
                           }}
                         >
-                          <FaEnvelope /> <FaRobot style={{ marginLeft: 2 }} /> Enviar Mail
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                            {mailLoading === fila.emails ? (
+                              <span style={{ fontSize: 16, marginRight: 6 }} role="img" aria-label="cargando">⏳</span>
+                            ) : null}
+                            <FaEnvelope />
+                            <FaRobot style={{ marginLeft: "2px" }} />
+                            Enviar Mail
+                          </span>
                         </button>
                       </td>
                     </tr>
