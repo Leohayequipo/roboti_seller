@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FaGlobe, FaShoppingCart, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { FaGlobe, FaShoppingCart, FaCheckCircle, FaTimesCircle, FaEnvelope, FaRobot } from "react-icons/fa";
 
 export default function App() {
   const [urls, setUrls] = useState<string>("");
@@ -142,7 +142,34 @@ export default function App() {
                         <span style={{ display: "inline-block", borderRadius: 16, padding: "4px 12px", fontWeight: 600, background: fila.confiabilidad === 'alta' ? '#34d399' : fila.confiabilidad === 'media' ? '#fbbf24' : '#f87171', color: fila.confiabilidad === 'media' ? '#232946' : '#fff' }}>{fila.confiabilidad}</span>
                       </td>
                       <td>
-                        <span style={{ display: "inline-block", borderRadius: 16, padding: "4px 12px", fontWeight: 700, background: fila.score >= 80 ? 'linear-gradient(90deg, #34d399 60%, #a5b4fc 100%)' : fila.score >= 60 ? 'linear-gradient(90deg, #fbbf24 60%, #a5b4fc 100%)' : 'linear-gradient(90deg, #f87171 60%, #a5b4fc 100%)', color: fila.score >= 80 ? '#fff' : fila.score >= 60 ? '#232946' : '#fff' }}>{fila.score}</span>
+                        <span style={{ display: "inline-block", borderRadius: 16, padding: "4px 12px", fontWeight: 700, background: fila.score >= 80 ? 'linear-gradient(90deg, #34d399 60%, #a5b4fc 100%)' : fila.score >= 60 ? 'linear-gradient(90deg, #fbbf24 60%, #a5b4fc 100%)' : 'linear-gradient(90deg, #f87171 60%, #a5b4fc 100%)', color: fila.score >= 80 ? '#fff' : fila.score >= 60 ? '#232946' : '#fff', marginRight: 8 }}>{fila.score}</span>
+                        <button
+                          style={{
+                            background: fila.emails ? "#2563eb" : "#cbd5e1",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: 8,
+                            padding: "6px 12px",
+                            fontWeight: 600,
+                            fontSize: 14,
+                            cursor: fila.emails ? "pointer" : "not-allowed",
+                            marginLeft: 4,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 6,
+                            opacity: fila.emails ? 1 : 0.5,
+                            transition: "background 0.2s"
+                          }}
+                          disabled={!fila.emails}
+                          title={fila.emails ? `Enviar mail a ${fila.emails}` : "Sin email"}
+                          onClick={() => {
+                            if (fila.emails) {
+                              window.location.href = `mailto:${fila.emails}`;
+                            }
+                          }}
+                        >
+                          <FaEnvelope /> <FaRobot style={{ marginLeft: 2 }} /> Enviar Mail
+                        </button>
                       </td>
                     </tr>
                   ))}
